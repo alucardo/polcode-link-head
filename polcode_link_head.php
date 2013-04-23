@@ -10,21 +10,19 @@
 
 //include required class
 
-	require 'class/htaccess.polcode.php';
-
-
 
 class polcode_link_head {
 
 
-	//iner class var
-	$hta;
-
 	
 	function __construct(){
 
-		$hta = new htaccess_polcode();
-	
+		//css init
+		wp_register_style( 'linkhead', plugins_url('css/polcode_link_head.css', __FILE__) );
+    	wp_enqueue_style( 'linkhead' );
+
+
+
 		// init for admin site
 		if(is_admin()) {
 			add_action('admin_menu', array($this, 'initAction'));
@@ -32,76 +30,33 @@ class polcode_link_head {
 		}
 	}
 
-	private function initAction() {
-		
-	}
-
-	/************************* View Action *****************************/
-
-	//main plugin admin view
-	private function indexAction() {
-
+	function initAction() {
+		//main link
+		add_menu_page('Polcode Link', 'Polcode Link', 'manage_options', 'polcode_link_head', array($this, 'indexAction'));
+			//sub page
+			add_submenu_page('polcode_link_head', 'Htaccess View', 'Htaccess', 'manage_options', 'polcode_link_head_htaccess', array($this, 'htaAction') );
 	}
 
 
-	//htaccess view 
-	private function htaAction() {
+	/*************************** View Action ***********************************/
 
+	function indexAction(){
+
+		$this->theme('index');
 	}
 
-	//header view
-	private function headAction() {
+	function htaAction(){
 
-	}
-
-
-	/************************* get | set | add | back *************************/
-
-
-
-	//gets all links
-	private function getAllLinks() {
-
-	}
-
-	//gets single link 
-	private function getLink($id) {
-
-	}
-
-	//set link
-	private function setLink($id) {
-
-	}
-
-	//add link
-	private function addLink() {
-
+		$this->theme('hta');	
 	}
 
 
-	//get value from wp-option
-	private function getOption($name) {
+	/************************* helpers ******************************************/
 
+
+	function theme($name){
+		require "theme/{$name}.php";
 	}
-
-	//get header
-	private function getHeader($id) {
-
-	}
-
-	//set header
-	private function setHeader($id) {
-
-	}
-
-	//add header
-	private function addHeader() {
-
-	}
-
-
-	/******************** helpers ***********************************/
 
 
 
