@@ -1,4 +1,8 @@
-.polcode_site{
-	width: 960px;
-	margin: 10px auto;
+.polcode_link_head {
+
+}
+
+.polcode_link_head textarea {
+	width: 90%;
+	height: 500px;
 }

@@ -21,6 +21,54 @@ class polcode_link_head {
 		}
 	}
 
+
+	function initAction() {
+
+		wp_register_style( 'linkhead', plugins_url('css/polcode_link_head.css', __FILE__) );
+    	wp_enqueue_style( 'linkhead' );
+
+
+		add_menu_page('Link Head', 'Link Head', 'manage_options', 'polcode_link_head', array($this, 'indexAction'));
+			//submenu
+			add_submenu_page('polcode_link_head', 'Polcode Link Header', 'Htaccess', 'manage_options', 'polcode_link_head_htaccess', array($this, 'htaAction') );
+			add_submenu_page('polcode_link_head', 'Polcode Link Header Add', 'Link Add', 'manage_options', 'polcode_link_head_add', array($this, 'addAction') );
+	}
+
+
+	/********************** view action ************************************/
+
+	function indexAction() {
+		$this->getRows();
+		$this->themeHelper('index');
+		
+	}
+
+	function htaAction() {
+		$this->openHtaccess('r');
+			$tresc = fread($this->file, filesize($this->htpath));		
+		$this->closeHtaccess();
+		include "theme/hta.php";
+	}
+
+	function addAction(){
+		//adding line
+		if(isset($_POST['line'])){
+			$this->addLine($_POST['code'], $_POST['line'], $_POST['to']);
+		}
+
+		include "theme/add.php";
+
+	}
+
+
+	/******************** helpers ***************************************/
+
+	function themeHelper($name){
+		include "theme/{$name}.php";
+	}
+
+
+
 	function openHtaccess($typ) {
 		try {
 			$this -> file = fopen($this->htpath, $typ);
@@ -32,11 +80,6 @@ class polcode_link_head {
 
 	function closeHtaccess(){
 		fclose($this -> file);
-	}
-
-	function initAction() {
-		add_menu_page('Link Head', 'Link Head', 'manage_options', 'polcode_link_head', array($this, 'indexAction'));
-
 	}
 
 	function getRows(){
@@ -62,27 +105,14 @@ class polcode_link_head {
            			}
         		}
     		}
-
-
 		$this->closeHtaccess();
 	}
 
-	/********************** view action ************************************/
+	function addLine($code, #line, $to){
+		$this->openHtaccess('r+');
 
-	function indexAction() {
-		$this->getRows();
-
-		$this->themeHelper('index');
-		
+		$this->closeHtaccess();
 	}
-
-
-	/******************** helpers ***************************************/
-
-	function themeHelper($name){
-		include "theme/{$name}.php";
-	}
-
 }
 
 $plh =  new polcode_link_head();
