@@ -1,8 +1,28 @@
 .polcode_link_head {
-
+	width: 960px;
+	padding: 10px;
 }
 
 .polcode_link_head textarea {
 	width: 90%;
 	height: 500px;
+	padding: 2px;
 }
+
+.polcode_link_head input[type=text]{
+	padding: 2px;
+	width: 90%;
+}
+
+.polcode_link_head input[type=submit] {
+	width: 100px;
+	padding: 2px;
+	display: block;
+	margin: 10px auto;
+}
+
+.polcode_link_head input[type=submit]:hover {
+	background: #000;
+	color: #fff;
+}
+

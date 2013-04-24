@@ -8,8 +8,8 @@
 				<th>redirect</th>
 				<th>link</th>
 				<th>to</th>
+				<th>Delete</th>
 				<th>Edit</th>
-				<th>Show</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -23,8 +23,8 @@
 				<td><?php echo $tab[1]; ?></td>
 				<td><?php echo $tab[2]; ?></td>
 				<td><?php echo $tab[3]; ?></td>
-				<td><a href="">Edit</a></td>
-				<td><a href="">Show</a></td>
+				<td><a href="<?php echo get_admin_url(); ?>admin.php?page=polcode_link_head_delete&id=<?php echo $key ?>">Delete</a></td>
+				<td><a href="<?php echo get_admin_url(); ?>admin.php?page=polcode_link_head_edit&id=<?php echo $key ?>">Edit</a></td>
 			</tr>
 			<?php } ?>
 		</tbody>
