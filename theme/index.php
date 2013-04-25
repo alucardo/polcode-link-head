@@ -1,4 +1,4 @@
-<div>
+<div class="polcode_link_head">
 	<h1>Polcode Pretty Links</h1>
 	<p><a href="<?php echo get_admin_url(); ?>admin.php?page=polcode_link_head_add">Add link</a></p>
 	<table>

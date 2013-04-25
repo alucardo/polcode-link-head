@@ -1,12 +1,24 @@
 .polcode_link_head {
-	width: 960px;
+	width: 980px;
 	padding: 10px;
+}
+
+.polcode_link_head table {
+	width: 100%;
 }
 
 .polcode_link_head textarea {
 	width: 90%;
 	height: 500px;
 	padding: 2px;
+}
+
+.polcode_link_head textarea.short{
+	height: 200px;
+}
+
+.polcode_link_head textarea, .polcode_link_head input[type=text], .polcode_link_head input[type=submit]{
+	border: 1px solid #B7B7B7;
 }
 
 .polcode_link_head input[type=text]{
@@ -26,3 +38,18 @@
 	color: #fff;
 }
 
+.polcode_link_head table tbody tr:nth-child(2n-1){
+	background: #E5E5E5;
+
+}
+
+.polcode_link_head table tr:hover
+{
+	background: #000 !important;
+	color: #fff;
+	/* line-height: 25px; */
+}
+
+.polcode_link_head  table tr:hover  a{
+	color: #fff !important;
+}

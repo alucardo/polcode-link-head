@@ -13,8 +13,13 @@ class polcode_link_head {
 	private $htpath;
 	private $file;
 	private $entries;
+	private $tabtheme;
+	private $pluginname;
+	const VER = 0.1;
 
 	function __construct() {		
+		$this->pluginname = "polcode_link_head";
+		$this->tabtheme = $this->pluginname."_theme";
 		$this->htpath = $_SERVER["DOCUMENT_ROOT"].'/.htaccess';
 		if(is_admin()) {
 			add_action('admin_menu', array($this, 'initAction'));
@@ -24,6 +29,20 @@ class polcode_link_head {
 
 	function initAction() {
 
+
+		//check if plugin is install
+		if(!$this->getOption('installed')) {
+			$this->setOption('installed', 'N');
+			echo 'Plugin is not installed. Please refresh page.';
+		}
+
+		if($this->getOption('installed')=='N'){
+			$this->install();
+		}
+
+
+
+
 		wp_register_style( 'linkhead', plugins_url('css/polcode_link_head.css', __FILE__) );
     	wp_enqueue_style( 'linkhead' );
 
@@ -32,25 +51,33 @@ class polcode_link_head {
 			//submenu
 			add_submenu_page('polcode_link_head', 'Polcode Link Header', 'Htaccess', 'manage_options', 'polcode_link_head_htaccess', array($this, 'htaAction') );
 			add_submenu_page('polcode_link_head', 'Polcode Link Header Add', 'Link Add', 'manage_options', 'polcode_link_head_add', array($this, 'addAction') );
-			add_submenu_page('polcode_link_head', 'Polcode Link Head Theme', 'Header theme', 'manage_options', 'polcode_link_head_theme', array($this, 'headAction') );
+			add_submenu_page('polcode_link_head', 'Polcode Link Head Theme', 'Header theme', 'manage_options', 'polcode_link_head_theme', array($this, 'headerAction') );
 				//invisible link 
 				add_submenu_page('polcode_link_head_htaccess', 'Link delete', 'Delete', 'manage_options', 'polcode_link_head_delete', array($this, 'deleteAction') );
 				add_submenu_page('polcode_link_head_htaccess', 'Link edit', 'Edit', 'manage_options', 'polcode_link_head_edit', array($this, 'editAction') );
+				add_submenu_page('polcode_link_head_htaccess', 'Theme add', 'Theme Add', 'manage_options', 'polcode_link_head_theme_add', array($this, 'addThemeAction') );
+				add_submenu_page('polcode_link_head_htaccess', 'Theme edit', 'Theme Add', 'manage_options', 'polcode_link_head_theme_edit', array($this, 'editThemeAction') );
+				add_submenu_page('polcode_link_head_htaccess', 'Theme delete', 'Theme Add', 'manage_options', 'polcode_link_head_theme_delete', array($this, 'deleteThemeAction') );
 	}
 
 
 	/********************** view action ************************************/
 
 	function indexAction() {
+		//echo 'Install:<br>';
+		//$this->install();
+		//echo '<br>';
 		$this->getRows();
 		$this->themeHelper('index');
 	}
 
 	function htaAction() {
 		if(isset($_POST['hta'])) {
+			//$forsave =  stripcslashes($_POST['hta']); 
 			$this->openHtaccess('w');
-				fwrite($this->file, $_POST['hta']);
+				fwrite($this->file, stripcslashes($_POST['hta']));
 			$this->closeHtaccess();
+			//echo $forsave;
 		}
 
 
@@ -139,17 +166,30 @@ class polcode_link_head {
 	}
 
 	function headerAction(){
+		global $wpdb;
+		$rows = $wpdb -> get_results("SELECT * FROM ".$wpdb->prefix.$this->tabtheme);
 
+		include "theme/theme.php";
 	}
 
+
+	function addThemeAction(){
+		if(isset($_POST['nametheme'])){
+			$this->addTheme($_POST['nametheme'], $_POST['desc']);
+			echo 'Theme added';
+		}
+		include "theme/addtheme.php";
+	}
 
 	/******************** helpers ***************************************/
 
-	function themeHelper($name){
+	// not working with external var
+	private function themeHelper($name){
 		include "theme/{$name}.php";
 	}
 
-	function openHtaccess($typ) {
+	//opening htaccess file with $typ
+	private function openHtaccess($typ) {
 		try {
 			$this -> file = fopen($this->htpath, $typ);
 		}
@@ -158,11 +198,13 @@ class polcode_link_head {
 		}
 	}
 
-	function closeHtaccess(){
+	//closing file saved in file handler
+	private function closeHtaccess(){
 		fclose($this -> file);
 	}
 
-	function getRows(){
+	//create table with plugin rows from htaccess
+	private function getRows(){
 		$this->openHtaccess('r');
 			//$this->entries= array();
 			$start = 0;
@@ -188,7 +230,9 @@ class polcode_link_head {
 		$this->closeHtaccess();
 	}
 
-	function addLine($code, $line, $to){
+	// adds line to .htaccess
+	// only redairect now
+	private function addLine($code, $line, $to){
 		$this->openHtaccess('r+');
 		//prepare link 
 		$link = "Redirect {$code} {$line} {$to} \n";
@@ -211,17 +255,66 @@ class polcode_link_head {
 		$this->openHtaccess('w');
 		//save file 
 		for($i=0; $i<sizeof($tab); $i++){
-			//echo $tab[$i];
-			//echo '<br>';
+
 			fwrite($this->file, $tab[$i]);
+			//echo $tab[$i].'<br>';
 		}
 
 		echo 'line added';
 
 
 
-		$this->closeHtaccess();
+		//$this->closeHtaccess();
 	}
+
+	//adding theme to database
+	private function addTheme($name, $des){
+		global $wpdb;
+		//adding row by build in wp method
+		$rows_affective = $wpdb->insert( $wpdb->prefix.$this->tabtheme, array('name'=>$name, 'des'=>$des));
+	}
+
+
+
+
+	//get curent url
+	private function getCurlUrl(){
+		return $_SERVER['REQUEST_URI'];
+	}
+
+	//gets option with prefix
+	private function getOption($name) {
+		return get_option($this->pluginname.'_'.$name);
+	}
+
+	//set new option with prefix
+	private function setOption($name, $val) {
+		add_option($this->pluginname.'_'.$name, $val);
+	}
+
+	//edit option with prefix
+	private function editOption($name, $val){
+		update_option($this->pluginname.'_'.$name, $val);
+	}
+
+	//install 
+	private function install(){
+		//create table for themes
+		global $wpdb;
+		$table = "CREATE TABLE ".$wpdb->prefix.$this->tabtheme."(
+			`id` int(9) NOT NULL auto_increment,
+			`name` varchar(200) NOT NULL,
+			`des` text NOT NULL,
+			PRIMARY KEY (`id`)
+			) ENGINE =MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci";
+
+		//echo $table;
+		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+		dbDelta($table);
+
+		$this->editOption('installed', 'T');
+	}
+
 }
 
 $plh =  new polcode_link_head();
