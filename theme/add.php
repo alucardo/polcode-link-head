@@ -16,7 +16,7 @@
 		</div>
 		<div class="he">
 			<p>Theme:</p>
-			<select name="the">
+			<select name="them">
 				<?php foreach ($themes as $theme) { ?>
 				<option value="<?php echo $theme->id; ?>" ><?php echo $theme->name; ?></option>
 					

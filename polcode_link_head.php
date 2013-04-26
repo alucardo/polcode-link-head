@@ -18,7 +18,7 @@ class polcode_link_head {
 	private $pluginname;
 	const VER = 0.1;
 
-	function __construct() {		
+	function __construct() { 
 		$this->pluginname = "polcode_link_head";
 		$this->tabtheme = $this->pluginname."_theme";
 		$this->tabred = $this->pluginname."_red";
@@ -99,7 +99,7 @@ class polcode_link_head {
 	function addAction(){
 		//adding line
 		if(isset($_POST['link'])){
-			$this->addLine($_POST['code'], $_POST['link'], $_POST['to']);
+			$this->addLine($_POST['code'], $_POST['link'], $_POST['to'], $_POST['them'], $_POST['rob']);
 		}
 		$themes = $this->getAllThemes();
 
@@ -239,7 +239,7 @@ class polcode_link_head {
 	//closing file saved in file handler
 	private function closeHtaccess(){
 		fclose($this -> file);
-	}
+			}
 
 	//create table with plugin rows from htaccess
 	private function getRows(){
@@ -270,7 +270,7 @@ class polcode_link_head {
 
 	// adds line to .htaccess
 	// only redairect now
-	private function addLine($code, $line, $to){
+	private function addLine($code, $line, $to, $theme=0, $aft=""){
 		$this->openHtaccess('r+');
 		//prepare link 
 
@@ -281,9 +281,9 @@ class polcode_link_head {
 
 		if($code == '1'){
 
-			
+			$l = $this->addRed($to, $theme, $aft);
 
-			$link ="Redirect 301 {$line} /link={$l} \n";
+			$link ="Redirect 301 /red{$line} /link={$l} \n";
 
 
 		}
@@ -353,6 +353,14 @@ class polcode_link_head {
 		return $themes;
 	}
 
+
+	private function addRed($link, $theme, $aft) {
+		global $wpdb;
+		$rows_affective = $wpdb->insert( $wpdb->prefix.$this->tabred, array('link'=>$link, 'theme'=>$theme, 'aft'=>$aft));
+		return $wpdb->insert_id;
+	}
+
+
 	//install 
 	private function install(){
 		//create table for themes
@@ -377,6 +385,7 @@ class polcode_link_head {
 			`id` int(9) NOT NULL auto_increment,
 			`link` varchar(200) NOT NULL,
 			`theme` varchar(200) NOT NULL,			
+			`aft` varchar(200) NOT NULL,			
 			PRIMARY KEY (`id`)
 			) ENGINE =MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci";
 
