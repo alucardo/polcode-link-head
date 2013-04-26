@@ -22,6 +22,22 @@ class polcode_link_head {
 		$this->pluginname = "polcode_link_head";
 		$this->tabtheme = $this->pluginname."_theme";
 		$this->tabred = $this->pluginname."_red";
+
+
+		if(is_page($this->getOption(postid))) {
+
+		}
+
+		/*
+		add_filter( 'page_template', 'wpa3396_page_template' );
+		function wpa3396_page_template( $page_template )
+		{
+		    if ( is_page( 'my-custom-page-slug' ) ) {
+		        $page_template = dirname( __FILE__ ) . '/custom-page-template.php';
+		    }
+		    return $page_template;
+		}
+		*/
 		
 		if(is_admin()) {
 			add_action('admin_menu', array($this, 'initAdminAction'));
@@ -404,6 +420,25 @@ class polcode_link_head {
 			fwrite($this->file, "\n# polcode_link_head start \n");
 			fwrite($this->file, "# polcode_link_head end \n");
 		$this->closeHtaccess();
+
+
+		//prepare new post
+
+		$my_post = array(
+		  'post_title'    => '',
+		  'post_content'  => ' ',
+		  'post_status'   => 'publish',
+		  'post_author'   => 1,
+		  'post_name'   => '/red',
+		  'post_type'   => 'page' 
+		);	
+
+
+		//add post and option with new post id
+		$p = wp_insert_post( $my_post );
+		echo 'Id nowego posta: '.$p.'<br>';
+
+		$this->setOption('postid', $p);
 
 
 		$this->editOption('installed', 'T');
