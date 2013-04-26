@@ -5,7 +5,7 @@
 		<p>Theme name:</p>
 		<input type="text" name="nametheme"><br>
 		<p>Theme content:</p>
-		<textarea name="desc"></textarea><br>
+		<textarea name="des"></textarea><br>
 		<input type="submit" value="save">
 	</form>
 </div>
