@@ -32,18 +32,6 @@ class polcode_link_head {
 		wp_register_style( 'if_css', plugins_url('css/if_css.css', __FILE__) );
     	wp_enqueue_style( 'if_css' );
 
-
-
-		/*
-			add_filter( 'page_template', 'wpa3396_page_template' );
-			function wpa3396_page_template( $page_template )
-			{
-			    if ( is_page( 'my-custom-page-slug' ) ) {
-			        $page_template = dirname( __FILE__ ) . '/custom-page-template.php';
-			    }
-			    return $page_template;
-			}
-		*/
 		
 		if(is_admin()) {
 			add_action('admin_menu', array($this, 'initAdminAction'));
@@ -96,11 +84,14 @@ class polcode_link_head {
 	/********************** view action ************************************/
 
 	function indexAction() {
-		//echo 'Install:<br>';
-		//$this->install();
-		//echo '<br>';
+
+		global $wpdb;
+
 		$this->getRows();
-		$this->themeHelper('index');
+
+		$dblinks = $wpdb->get_results("SELECT * FROM  ".$wpdb->prefix.$this->tabred);
+
+		include "theme/index.php";
 	}
 
 	function htaAction() {
@@ -133,15 +124,26 @@ class polcode_link_head {
 	}
 
 	function deleteAction(){
+		global $wpdb;
 		$id = $_GET['id'];
 		$this->getRows();
 		$del =  $this->entries[$id];
+
+		//getting id of link in databse
+		$pos = strpos($del, 'link=');
+		//var_dump($pos);
+		
+		if($pos!=false){
+			$p = substr($del, $pos+5);			
+			$wpdb -> get_results('DELETE FROM '.$wpdb->prefix.$this->tabred.' WHERE id = '.$p);
+		}
+
 		//create new tab to be save in .htaccess
 		$this->openHtaccess('r');
 		$tab;
 		$x = 0;
 		while (($buffer = fgets($this->file, filesize($this->htpath))) !== false) {  
-
+			
 			if($buffer == $del) {
 				continue;
 			}
@@ -157,6 +159,10 @@ class polcode_link_head {
 			fwrite($this->file, $tab[$i]);
 		}
 		$this->closeHtaccess();
+		
+
+
+
 		echo 'Line was deleted. <a href="';
 		echo get_admin_url();
 		echo 'admin.php?page=polcode_link_head">Back to main page</a>';
@@ -164,8 +170,16 @@ class polcode_link_head {
 
 	function editAction(){
 		$id = $_GET['id'];
+		$db = $_GET['db'];
+		global $wpdb;
+		$dbd = $this->getRed($db);
+		$themes = $this->getAllThemes();
 		$this->getRows();
 		$tresc =  $this->entries[$id];
+		$li = $dbd->link;
+		$th = $dbd->theme;
+		$af = $dbd->aft;
+
 		if(isset($_POST['editlink'])){
 			//echo 'edit start<br>';
 			$this->openHtaccess('r');
@@ -191,12 +205,19 @@ class polcode_link_head {
 
 			}
 			$this->closeHtaccess();
+			$wpdb -> get_results("UPDATE ".$wpdb->prefix.$this->tabred." SET link ='".$_POST['link']."', theme = ".$_POST['them'].", aft= '".$_POST['aft']."' WHERE id = ".$db);
+
 			$tresc = $_POST['editlink'];
+			$li = $_POST['link'];
+			$th = $_POST['them'];
+			$af = $_POST['aft'];
+
+
 			echo 'link edited';
 			//redirect after edit
 			//$path = get_admin_url()."?page=polcode_link_head";
 			//wp_redirect( $location );
-		}
+		}// \ if /
 		include "theme/edit.php";
 	}
 
@@ -401,12 +422,43 @@ class polcode_link_head {
 	}
 
 
+	
+	//gets single theme by id
+	function getThemeById($ids){
+		global $wpdb;
+		$theme = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.$this->tabtheme." WHERE id = ".$ids);
+		
+		return $theme[0];
+	}
+
+	//get red db id by id in ht
+	function getRedById($str) {
+		$pos = strpos($str, 'link=');		
+		if($pos!=false){
+			return substr($str, $pos+5);			
+		}
+		else {
+			return 0;
+		}
+	}
+
+	function getRed($id){
+		global $wpdb;
+		$ent = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.$this->tabred." WHERE id =".$id);
+		//var_dump($ent);
+		
+		return $ent[0];
+	}
+
+
 	//install 
 	private function install(){
 		//create table for themes
 		global $wpdb;
 		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
+
+		//create theme header table
 
 		$table = "CREATE TABLE ".$wpdb->prefix.$this->tabtheme."(
 			`id` int(9) NOT NULL auto_increment,
@@ -430,6 +482,8 @@ class polcode_link_head {
 			) ENGINE =MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci";
 
 		dbDelta($table2);
+
+		// create statistic table
 
 		$table3 = "CREATE TABLE ".$wpdb->prefix.$this->tabstat."(
 			`id` int(9) NOT NULL auto_increment,

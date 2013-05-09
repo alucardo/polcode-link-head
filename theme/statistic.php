@@ -6,7 +6,7 @@
 				<th>ID stat</th>
 				<th>ID link</th>
 				<th>Partner links</th>
-				<th>Visits</th>
+				<th>Cliks</th>
 				<th>Last visit</th>
 			</tr>
 		</thead>
