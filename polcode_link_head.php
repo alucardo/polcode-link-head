@@ -22,21 +22,27 @@ class polcode_link_head {
 		$this->pluginname = "polcode_link_head";
 		$this->tabtheme = $this->pluginname."_theme";
 		$this->tabred = $this->pluginname."_red";
+		$this->tabstat = $this->pluginname."_stat";
+
+		//js for iframe
+		wp_register_script('if_js', plugins_url( 'js/iframe-param.js', __FILE__ ));
+		wp_enqueue_script( 'if_js' );	
+
+		//css files for iframes
+		wp_register_style( 'if_css', plugins_url('css/if_css.css', __FILE__) );
+    	wp_enqueue_style( 'if_css' );
 
 
-		if(is_page($this->getOption(postid))) {
-
-		}
 
 		/*
-		add_filter( 'page_template', 'wpa3396_page_template' );
-		function wpa3396_page_template( $page_template )
-		{
-		    if ( is_page( 'my-custom-page-slug' ) ) {
-		        $page_template = dirname( __FILE__ ) . '/custom-page-template.php';
-		    }
-		    return $page_template;
-		}
+			add_filter( 'page_template', 'wpa3396_page_template' );
+			function wpa3396_page_template( $page_template )
+			{
+			    if ( is_page( 'my-custom-page-slug' ) ) {
+			        $page_template = dirname( __FILE__ ) . '/custom-page-template.php';
+			    }
+			    return $page_template;
+			}
 		*/
 		
 		if(is_admin()) {
@@ -78,6 +84,7 @@ class polcode_link_head {
 			add_submenu_page('polcode_link_head', 'Polcode Link Header Add', 'Link Add', 'manage_options', 'polcode_link_head_add', array($this, 'addAction') );
 			add_submenu_page('polcode_link_head', 'Polcode Link Head Theme', 'Header theme', 'manage_options', 'polcode_link_head_theme', array($this, 'headerAction') );
 			add_submenu_page('polcode_link_head', 'Theme add', 'Theme Add', 'manage_options', 'polcode_link_head_theme_add', array($this, 'addThemeAction') );
+			add_submenu_page('polcode_link_head', 'Statistic', 'Statistic', 'manage_options', 'polcode_link_head_statistic', array($this, 'statisticAction') );
 				//invisible link 
 				add_submenu_page('polcode_link_head_htaccess', 'Link delete', 'Delete', 'manage_options', 'polcode_link_head_delete', array($this, 'deleteAction') );
 				add_submenu_page('polcode_link_head_htaccess', 'Link edit', 'Edit', 'manage_options', 'polcode_link_head_edit', array($this, 'editAction') );
@@ -232,6 +239,14 @@ class polcode_link_head {
 		include 'theme/edittheme.php';  
 	}
 
+
+	function statisticAction(){
+		global $wpdb;
+		$links = $wpdb->get_results('SELECT * FROM '.$wpdb->prefix.$this->tabstat.' ORDER BY last DESC');
+		//var_dump($this->getLinkInfo(2));
+		include 'theme/statistic.php';	
+	}
+
 	/******************** helpers ***************************************/
 
 	// not working with external var
@@ -298,9 +313,9 @@ class polcode_link_head {
 		if($code == '1'){
 
 			$l = $this->addRed($to, $theme, $aft);
-
-			$link ="Redirect 301 /red{$line} /link={$l} \n";
-
+			$pid = $this->getOption('postid');
+			$link ="Redirect 301 /red{$line} /?page_id={$pid}&link={$l} \n";
+			//$link = "RewriteRule ^/red{$line}/$ /?page_id={$pid}&link={$l} \n";
 
 		}
 		else{
@@ -376,6 +391,15 @@ class polcode_link_head {
 		return $wpdb->insert_id;
 	}
 
+	//gets names 
+	function getLinkInfo($id){
+		global $wpdb;
+
+		$rows = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.$this->tabred." WHERE id = ".$id);
+		//echo 'test';
+		return $rows[0];
+	}
+
 
 	//install 
 	private function install(){
@@ -406,6 +430,15 @@ class polcode_link_head {
 			) ENGINE =MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci";
 
 		dbDelta($table2);
+
+		$table3 = "CREATE TABLE ".$wpdb->prefix.$this->tabstat."(
+			`id` int(9) NOT NULL auto_increment,
+			`link` int(9) NOT NULL,
+			`visit` int(11) NOT NULL,
+			PRIMARY KEY (`id`)
+			) ENGINE =MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci";
+
+		dbDelta($table3);
 
 
 		//add info to robbot.txt

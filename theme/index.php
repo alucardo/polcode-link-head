@@ -1,6 +1,8 @@
 <div class="polcode_link_head">
 	<h1>Polcode Pretty Links</h1>
 	<p><a href="<?php echo get_admin_url(); ?>admin.php?page=polcode_link_head_add">Add link</a></p>
+
+	<h2>Htaccess entries </h2>
 	<table>
 		<thead>
 			<tr>
@@ -29,4 +31,8 @@
 			<?php } ?>
 		</tbody>
 	</table> 
+
+	<h2>Databes entries </h2>
+
+
 </div>
