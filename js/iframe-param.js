@@ -1,4 +1,5 @@
-jQuery(document).ready(function(){
+jQuery(document).ready(function($){
+//alert('test');
 	jQuery("iframe.iframe").width(jQuery(window).width());
 	jQuery("iframe.iframe").height((jQuery(window).height() - jQuery("#headerCntr").outerHeight()));
 

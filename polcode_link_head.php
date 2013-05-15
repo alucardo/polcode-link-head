@@ -24,19 +24,44 @@ class polcode_link_head {
 		$this->tabred = $this->pluginname."_red";
 		$this->tabstat = $this->pluginname."_stat";
 
+		add_action('init',  array($this, 'red'));
+
 		//js for iframe
-		wp_register_script('if_js', plugins_url( 'js/iframe-param.js', __FILE__ ));
+		wp_register_script('if_js', plugins_url( 'js/iframe-param.js', __FILE__ ), array('jquery'));
 		wp_enqueue_script( 'if_js' );	
 
 		//css files for iframes
 		wp_register_style( 'if_css', plugins_url('css/if_css.css', __FILE__) );
     	wp_enqueue_style( 'if_css' );
 
+    	
+
+		//adding css for admin
+
+		wp_register_style( 'linkhead', plugins_url('css/polcode_link_head.css', __FILE__) );
+    	wp_enqueue_style( 'linkhead' );
 		
 		if(is_admin()) {
 			add_action('admin_menu', array($this, 'initAdminAction'));
+
+			//adding js files
+			wp_register_script('phl_js', plugins_url( 'js/polcode_link_head.js', __FILE__ ), array('jquery'));
+			wp_enqueue_script( 'phl_js' );		
 		}
 	}
+
+	function red(){
+		$link = $_SERVER["REQUEST_URI"];
+
+		$i = strpos($link, 'red/');
+		if($i>0){
+		//var_dump($i);
+			require( 'out.php' );
+			
+		}
+	}
+
+
 
 
 	function initAdminAction() {
@@ -53,14 +78,7 @@ class polcode_link_head {
 			$this->install();
 		}
 
-		//adding js files
-		wp_register_script('phl_js', plugins_url( 'js/polcode_link_head.js', __FILE__ ));
-		wp_enqueue_script( 'phl_js' );		
-
-		//adding css for admin
-
-		wp_register_style( 'linkhead', plugins_url('css/polcode_link_head.css', __FILE__) );
-    	wp_enqueue_style( 'linkhead' );
+		
 
 
 
@@ -68,16 +86,19 @@ class polcode_link_head {
     	//adding menu elements
 		add_menu_page('Link Head', 'Link Head', 'manage_options', 'polcode_link_head', array($this, 'indexAction'));
 			//submenu
-			add_submenu_page('polcode_link_head', 'Polcode Link Header', 'Htaccess', 'manage_options', 'polcode_link_head_htaccess', array($this, 'htaAction') );
+			//add_submenu_page('polcode_link_head', 'Polcode Link Header', 'Htaccess', 'manage_options', 'polcode_link_head_htaccess', array($this, 'htaAction') );
 			add_submenu_page('polcode_link_head', 'Polcode Link Header Add', 'Link Add', 'manage_options', 'polcode_link_head_add', array($this, 'addAction') );
 			add_submenu_page('polcode_link_head', 'Polcode Link Head Theme', 'Header theme', 'manage_options', 'polcode_link_head_theme', array($this, 'headerAction') );
 			add_submenu_page('polcode_link_head', 'Theme add', 'Theme Add', 'manage_options', 'polcode_link_head_theme_add', array($this, 'addThemeAction') );
 			add_submenu_page('polcode_link_head', 'Statistic', 'Statistic', 'manage_options', 'polcode_link_head_statistic', array($this, 'statisticAction') );
 				//invisible link 
-				add_submenu_page('polcode_link_head_htaccess', 'Link delete', 'Delete', 'manage_options', 'polcode_link_head_delete', array($this, 'deleteAction') );
-				add_submenu_page('polcode_link_head_htaccess', 'Link edit', 'Edit', 'manage_options', 'polcode_link_head_edit', array($this, 'editAction') );
-				add_submenu_page('polcode_link_head_htaccess', 'Theme edit', 'Theme Edit', 'manage_options', 'polcode_link_head_theme_edit', array($this, 'editThemeAction') );
-				add_submenu_page('polcode_link_head_htaccess', 'Theme delete', 'Theme delete', 'manage_options', 'polcode_link_head_theme_delete', array($this, 'deleteThemeAction') );
+				add_submenu_page('polcode_link_head_head_add', 'Link delete', 'Delete', 'manage_options', 'polcode_link_head_delete', array($this, 'deleteAction') );
+				add_submenu_page('polcode_link_head_head_add', 'Link edit', 'Edit', 'manage_options', 'polcode_link_head_edit', array($this, 'editAction') );
+				add_submenu_page('polcode_link_head_head_add', 'Theme edit', 'Theme Edit', 'manage_options', 'polcode_link_head_theme_edit', array($this, 'editThemeAction') );
+				add_submenu_page('polcode_link_head_head_add', 'Theme delete', 'Theme delete', 'manage_options', 'polcode_link_head_theme_delete', array($this, 'deleteThemeAction') );
+				add_submenu_page('polcode_link_head_head_add', 'Reset all', 'Reset all', 'manage_options', 'polcode_link_head_reset_all', array($this, 'resetAllAction') );
+				add_submenu_page('polcode_link_head_head_add', 'Reset', 'Reset', 'manage_options', 'polcode_link_head_reset', array($this, 'resetAction') );
+				add_submenu_page('polcode_link_head_head_add', 'delete stat', 'delete stat', 'manage_options', 'polcode_link_head_stat_delete', array($this, 'statDeleteAction') );
 	}
 
 
@@ -87,7 +108,7 @@ class polcode_link_head {
 
 		global $wpdb;
 
-		$this->getRows();
+		//$this->getRows();
 
 		$dblinks = $wpdb->get_results("SELECT * FROM  ".$wpdb->prefix.$this->tabred);
 
@@ -126,97 +147,32 @@ class polcode_link_head {
 	function deleteAction(){
 		global $wpdb;
 		$id = $_GET['id'];
-		$this->getRows();
-		$del =  $this->entries[$id];
-
-		//getting id of link in databse
-		$pos = strpos($del, 'link=');
-		//var_dump($pos);
-		
-		if($pos!=false){
-			$p = substr($del, $pos+5);			
-			$wpdb -> get_results('DELETE FROM '.$wpdb->prefix.$this->tabred.' WHERE id = '.$p);
-		}
-
-		//create new tab to be save in .htaccess
-		$this->openHtaccess('r');
-		$tab;
-		$x = 0;
-		while (($buffer = fgets($this->file, filesize($this->htpath))) !== false) {  
-			
-			if($buffer == $del) {
-				continue;
-			}
-			$tab[$x] = $buffer;
-			$x++;
-
-		}
-		$this->closeHtaccess();
-
-		//saving 
-		$this->openHtaccess('w');
-		for($i=0; $i<sizeof($tab); $i++){
-			fwrite($this->file, $tab[$i]);
-		}
-		$this->closeHtaccess();
-		
-
-
-
+		$wpdb -> get_results('DELETE FROM '.$wpdb->prefix.$this->tabred.' WHERE id = '.$id);
 		echo 'Line was deleted. <a href="';
 		echo get_admin_url();
 		echo 'admin.php?page=polcode_link_head">Back to main page</a>';
 	}
 
 	function editAction(){
-		$id = $_GET['id'];
-		$db = $_GET['db'];
+		$id = $_GET['id'];		
 		global $wpdb;
-		$dbd = $this->getRed($db);
-		$themes = $this->getAllThemes();
-		$this->getRows();
-		$tresc =  $this->entries[$id];
+		$dbd = $this->getRed($id);
+		$themes = $this->getAllThemes();		
 		$li = $dbd->link;
+		$lif = $dbd->linkfrom;
 		$th = $dbd->theme;
 		$af = $dbd->aft;
 
-		if(isset($_POST['editlink'])){
-			//echo 'edit start<br>';
-			$this->openHtaccess('r');
-			$tab;
-			$x = 0;
-			while (($buffer = fgets($this->file, filesize($this->htpath))) !== false) {  
-				if($buffer == $tresc) {					
-					$tab[$x] = $_POST['editlink']."\n";
-				}
-				else
-				{
-					$tab[$x] = $buffer;
-				}
-				$x++;			
-			}
-			$this->closeHtaccess();
-			//echo 'saving new file';
+		if(isset($_POST['link'])){			
+			//var_dump($id);
+			$wpdb->get_results("UPDATE ".$wpdb->prefix.$this->tabred." SET link ='".$_POST['link']."', theme = ".$_POST['them'].", aft= '".$_POST['aft']."', linkfrom = '".$_POST['linkfrom']."' WHERE id = ".$id);
+
 			
-			$this->openHtaccess('w');
-			for($i=0; $i<sizeof($tab); $i++){
-				fwrite($this->file, $tab[$i]);
-				//echo $tab[$i].'<br>';
-
-			}
-			$this->closeHtaccess();
-			$wpdb -> get_results("UPDATE ".$wpdb->prefix.$this->tabred." SET link ='".$_POST['link']."', theme = ".$_POST['them'].", aft= '".$_POST['aft']."' WHERE id = ".$db);
-
-			$tresc = $_POST['editlink'];
 			$li = $_POST['link'];
+			$lif = $_POST['linkfrom'];
 			$th = $_POST['them'];
 			$af = $_POST['aft'];
-
-
 			echo 'link edited';
-			//redirect after edit
-			//$path = get_admin_url()."?page=polcode_link_head";
-			//wp_redirect( $location );
 		}// \ if /
 		include "theme/edit.php";
 	}
@@ -266,6 +222,28 @@ class polcode_link_head {
 		$links = $wpdb->get_results('SELECT * FROM '.$wpdb->prefix.$this->tabstat.' ORDER BY last DESC');
 		//var_dump($this->getLinkInfo(2));
 		include 'theme/statistic.php';	
+	}
+
+	function resetAction() {
+		$id = $_GET['id'];
+		global $wpdb;
+		$reset = $wpdb->get_results("UPDATE ".$wpdb->prefix.$this->tabstat." SET visit = 0, last = 0 WHERE id = ".$id);
+		//$r = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.$this->tabstat." WHERE id = ".$id);
+		//var_dump($r);
+		$this->redirectAdmin("statistic");
+	}
+
+	function resetAllAction() {
+		global $wpdb;
+		$reset = $wpdb->get_results("UPDATE ".$wpdb->prefix.$this->tabstat." SET visit = 0, last = 0 ");
+		$this->redirectAdmin("statistic");
+	}
+
+	function statDeleteAction(){
+		global $wpdb;
+		$id = $_GET['id'];
+		$wpdb -> get_results('DELETE FROM '.$wpdb->prefix.$this->tabstat.' WHERE id = '.$id);
+		$this->redirectAdmin("statistic");
 	}
 
 	/******************** helpers ***************************************/
@@ -333,15 +311,15 @@ class polcode_link_head {
 
 		if($code == '1'){
 
-			$l = $this->addRed($to, $theme, $aft);
+			$l = $this->addRed($to, $theme, $aft, $line);
 			$pid = $this->getOption('postid');
-			$link ="Redirect 301 /red{$line} /?page_id={$pid}&link={$l} \n";
+			//$link ="Redirect 301 /red{$line} /?page_id={$pid}&link={$l} \n";
 			//$link = "RewriteRule ^/red{$line}/$ /?page_id={$pid}&link={$l} \n";
 
 		}
 		else{
 			$link = "Redirect {$code} {$line} {$to} \n";
-		}
+		
 		//echo $link
 		$x = 0; // itteratorfor tab
 		$tab; //table with all .htacces lines
@@ -365,8 +343,10 @@ class polcode_link_head {
 			fwrite($this->file, $tab[$i]);
 			//echo $tab[$i].'<br>';
 		}
-		echo 'line added';
+
 		$this->closeHtaccess();
+		}
+		echo 'line added';
 		
 	}
 
@@ -406,9 +386,9 @@ class polcode_link_head {
 	}
 
 
-	private function addRed($link, $theme, $aft) {
+	private function addRed($link, $theme, $aft, $linkfrom) {
 		global $wpdb;
-		$rows_affective = $wpdb->insert( $wpdb->prefix.$this->tabred, array('link'=>$link, 'theme'=>$theme, 'aft'=>$aft));
+		$rows_affective = $wpdb->insert( $wpdb->prefix.$this->tabred, array('link'=>$link, 'linkfrom'=>$linkfrom , 'theme'=>$theme, 'aft'=>$aft));
 		return $wpdb->insert_id;
 	}
 
@@ -450,6 +430,11 @@ class polcode_link_head {
 		return $ent[0];
 	}
 
+	function redirectAdmin($url){
+		$path = get_admin_url()."admin.php?page=polcode_link_head_".$url;
+		echo "<script>window.location='".$path."'</script>";
+	}
+
 
 	//install 
 	private function install(){
@@ -476,6 +461,7 @@ class polcode_link_head {
 		$table2 = "CREATE TABLE ".$wpdb->prefix.$this->tabred."(
 			`id` int(9) NOT NULL auto_increment,
 			`link` varchar(200) NOT NULL,
+			`linkfrom` varchar(200) NULL,
 			`theme` varchar(200) NOT NULL,			
 			`aft` varchar(200) NOT NULL,			
 			PRIMARY KEY (`id`)
@@ -489,6 +475,7 @@ class polcode_link_head {
 			`id` int(9) NOT NULL auto_increment,
 			`link` int(9) NOT NULL,
 			`visit` int(11) NOT NULL,
+			`last` int(11) NOT NULL,
 			PRIMARY KEY (`id`)
 			) ENGINE =MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci";
 
@@ -496,18 +483,20 @@ class polcode_link_head {
 
 
 		//add info to robbot.txt
+		
 		$this->openHtaccess('a', "robots.txt");
 			fwrite($this->file, "\nDisallow: /red/");
 		$this->closeHtaccess();
-
+		
 
 
 		//add line to .htaccess
+		/*
 		$this->openHtaccess('a');
 			fwrite($this->file, "\n# polcode_link_head start \n");
 			fwrite($this->file, "# polcode_link_head end \n");
 		$this->closeHtaccess();
-
+		*/
 
 		//prepare new post
 

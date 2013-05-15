@@ -5,60 +5,70 @@
  * @package WordPress
  * @subpackage Fashion Sale Alerts
  */?>
-<!DOCTYPE html >
-<html >
-    <head profile="http://gmpg.org/xfn/11">
-        <meta name="verification" content="" />
-        <meta http-equiv="Content-Type" content="<?php bloginfo('html_type'); ?>; charset=<?php bloginfo('charset'); ?>" />
-        <title>     </title>       
-        <link rel="author" href="" />  
-        <?php wp_head(); ?>
-    </head>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+<meta charset="<?php bloginfo( 'charset' ); ?>" />
+<meta name="viewport" content="width=device-width, maximum-scale=1" />
+<title><?php wp_title(""); ?></title>
+
+<!-- TradeDoubler site verification 2261757 -->
+<?php
+    wp_head();
+?>
+
+
+
+<!--[if lt IE 9]>
+<script src="<?= get_template_directory_uri() ?>/js/html5.js" type="text/javascript"></script>
+<![endif]-->
+
+</head>
 
  <?php
 
-//global $wpdb;
+    global $wpdb;
+    $link = $_SERVER["REQUEST_URI"];
+    $link = substr($link, 4);
+    $idls = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."polcode_link_head_red WHERE linkfrom = '".$link."'");
+    $idl = $idls[0]->id;
+    $head_text =  $wpdb->get_results('SELECT * FROM '.$wpdb->prefix.'polcode_link_head_theme WHERE id = '.$idls[0]->theme); 
+    //var_dump($idls);
 
-$idl = $_GET['link'];
-$data = $wpdb->get_results('SELECT * FROM '.$wpdb->prefix.'polcode_link_head_red WHERE id = '.$idl);
-//var_dump($data);
-
-    
-$head_text =  $wpdb->get_results('SELECT * FROM '.$wpdb->prefix.'polcode_link_head_theme WHERE id = '.$data[0]->theme); 
-
-//statistic
+    //statistic
 
     //get visits
     $link_visit = $wpdb->get_results('SELECT * FROM '.$wpdb->prefix.'polcode_link_head_stat WHERE link = '.$idl);
-    $date = new DateTime();
+    //$date = new DateTime();
     if($link_visit==null){
 
        
-        $wpdb->insert($wpdb->prefix.'polcode_link_head_stat', array('link'=>$idl, 'visit'=>1, 'last'=>$date->getTimestamp()));
+        $wpdb->insert($wpdb->prefix.'polcode_link_head_stat', array('link'=>$idl, 'visit'=>1, 'last'=>time()));
        
     }
     else {
         $x = $link_visit[0]->visit;
         $x++;
-        $wpdb -> get_results("UPDATE ".$wpdb->prefix."polcode_link_head_stat SET visit = ".$x.", last = ".$date->getTimestamp()." WHERE link = ".$idl);
+        $wpdb -> get_results("UPDATE ".$wpdb->prefix."polcode_link_head_stat SET visit = ".$x.", last = ".time()." WHERE link = ".$idl);
 
     }
-
-    
-
 ?>
+
+
      <body>
         <div class="polcode_box">
             <p>
-
-                <?php 
+                  <?php 
                     echo $head_text[0]->des;
-                    //var_dump($link_visit);
                     
                 ?>
             </p>
             <a href="#" id="polcode_close">X</a>
         </div>
-       <iframe class="iframe" src="<?php echo $data[0]->link; ?>" sandbox=""><?php echo $data[0]->aft; ?></iframe>
+        <iframe class="iframe" src="<?php echo $idls[0]->link; ?>" sandbox=""><?php echo $idls[0]->aft; ?></iframe>
     </body>
 </html>
+
+<?php 
+    exit();
+?>

@@ -1,4 +1,5 @@
-jQuery(function(){
+jQuery(document).ready(function(){
+	
 	jQuery('.he').hide();
 	jQuery('#headtyp').change(function(){
 		 jQuery("select#headtyp option:selected").each(function () {

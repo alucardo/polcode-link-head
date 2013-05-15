@@ -1,12 +1,23 @@
 .polcode_box {
 	width: 100%;
-	height: 100px;
+	height: 125px;
 	background: #F7F7F7;
 	position: absolute;
 	top: 0px;
 	left: 0px;
 	z-index: 10000;
 	border-bottom: 1px solid #543823;
+}
+
+.polcode_box {
+	float: left;
+}
+
+.polcode_box span {
+	display: inline;
+	float: right;
+	margin-left: 43px;
+	width: 78%;
 }
 
 #polcode_close {
@@ -41,4 +52,7 @@ iframe{
 	border: 0;
 	padding: 0;
 	margin: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
 }
