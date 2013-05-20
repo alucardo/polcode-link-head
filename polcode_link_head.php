@@ -155,6 +155,7 @@ class polcode_link_head {
 		echo 'Line was deleted. <a href="';
 		echo get_admin_url();
 		echo 'admin.php?page=polcode_link_head">Back to main page</a>';
+		$this->redirectAdmin();
 	}
 
 	function editAction(){
@@ -490,7 +491,7 @@ class polcode_link_head {
 		return $ent[0];
 	}
 
-	function redirectAdmin($url){
+	function redirectAdmin($url=""){
 		$path = get_admin_url()."admin.php?page=polcode_link_head".$url;
 		echo "<script>window.location='".$path."'</script>";
 	}

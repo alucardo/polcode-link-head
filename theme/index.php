@@ -10,8 +10,9 @@
 				<th>ID</th>
 				<th>Pretty link</th>
 				<th>Link</th>
-				<th>Link</th>
-				<th>Link</th>
+				<th></th>
+				<th></th>
+				<th></th>
 				
 			</tr>
 		</thead>
@@ -23,6 +24,7 @@
 				<td><?php echo $link->link; ?></td>
 				<td><a href="<?php echo get_admin_url(); ?>admin.php?page=polcode_link_head_delete&id=<?php echo $link->id; ?>">Delete</a></td>
 				<td><a href="<?php echo get_admin_url(); ?>admin.php?page=polcode_link_head_edit&id=<?php echo $link->id; ?>">Edit</a></td>
+				<td><a href="http://<?php echo $_SERVER['SERVER_NAME'] ?>/red<?php echo $link->linkfrom; ?>" target="_blank">Show</a></td>
 			</tr>
 			<?php } ?>
 		</tbody>
