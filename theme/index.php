@@ -1,8 +1,9 @@
 <div class="polcode_link_head">
 	<h1>Polcode Pretty Links</h1>
-	<p><a href="<?php echo get_admin_url(); ?>admin.php?page=polcode_link_head_add">Add link</a></p>
-
-	<h2>Htaccess entries </h2>
+	<p><a href="<?php echo get_admin_url(); ?>admin.php?page=polcode_link_head_add">Add link</a> | 
+	<a href="<?php echo get_admin_url(); ?>admin.php?page=polcode_link_head_import">Import from "Pretty link" plugin</a> | 
+	<a href="<?php echo get_admin_url(); ?>admin.php?page=polcode_link_head_stat_delete_all_links">Delete all links</a></p>
+	<h2>Links</h2>
 	<table>
 		<thead>
 			<tr>

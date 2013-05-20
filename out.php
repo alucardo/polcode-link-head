@@ -63,7 +63,7 @@
                     
                 ?>
             </p>
-            <a href="#" id="polcode_close">X</a>
+            <a href="#" id="polcode_close">Sluiten<span>×</span></a>
         </div>
         <iframe class="iframe" src="<?php echo $idls[0]->link; ?>" sandbox=""><?php echo $idls[0]->aft; ?></iframe>
     </body>

@@ -10,6 +10,20 @@ jQuery(document).ready(function(){
 				jQuery('.he').hide();
 			}
 		});		
+	});// change
+
+	jQuery('#selall').click(function(event){
+		event.preventDefault();
+		jQuery('.polcode_link_head input[type="checkbox"]').prop('checked', true);
+
 	});
+
+	jQuery('#deall').click(function(event){
+		event.preventDefault();
+		jQuery('.polcode_link_head input[type="checkbox"]').prop('checked', false);
+
+	});
+
+
 });
 

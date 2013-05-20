@@ -91,6 +91,7 @@ class polcode_link_head {
 			add_submenu_page('polcode_link_head', 'Polcode Link Head Theme', 'Header theme', 'manage_options', 'polcode_link_head_theme', array($this, 'headerAction') );
 			add_submenu_page('polcode_link_head', 'Theme add', 'Theme Add', 'manage_options', 'polcode_link_head_theme_add', array($this, 'addThemeAction') );
 			add_submenu_page('polcode_link_head', 'Statistic', 'Statistic', 'manage_options', 'polcode_link_head_statistic', array($this, 'statisticAction') );
+			add_submenu_page('polcode_link_head', 'Import', 'Import', 'manage_options', 'polcode_link_head_import', array($this, 'importAction') );
 				//invisible link 
 				add_submenu_page('polcode_link_head_head_add', 'Link delete', 'Delete', 'manage_options', 'polcode_link_head_delete', array($this, 'deleteAction') );
 				add_submenu_page('polcode_link_head_head_add', 'Link edit', 'Edit', 'manage_options', 'polcode_link_head_edit', array($this, 'editAction') );
@@ -99,6 +100,9 @@ class polcode_link_head {
 				add_submenu_page('polcode_link_head_head_add', 'Reset all', 'Reset all', 'manage_options', 'polcode_link_head_reset_all', array($this, 'resetAllAction') );
 				add_submenu_page('polcode_link_head_head_add', 'Reset', 'Reset', 'manage_options', 'polcode_link_head_reset', array($this, 'resetAction') );
 				add_submenu_page('polcode_link_head_head_add', 'delete stat', 'delete stat', 'manage_options', 'polcode_link_head_stat_delete', array($this, 'statDeleteAction') );
+				add_submenu_page('polcode_link_head_head_add', 'delete all links', 'delete all links', 'manage_options', 'polcode_link_head_stat_delete_all_links', array($this, 'allDeleteAction') );
+				add_submenu_page('polcode_link_head_import', 'Import all', 'Import all', 'manage_options', 'polcode_link_head_import_all', array($this, 'importAllAction') );
+				add_submenu_page('polcode_link_head_import', 'Import single', 'Import single', 'manage_options', 'polcode_link_head_import_single', array($this, 'importSingleAction') );
 	}
 
 
@@ -230,20 +234,76 @@ class polcode_link_head {
 		$reset = $wpdb->get_results("UPDATE ".$wpdb->prefix.$this->tabstat." SET visit = 0, last = 0 WHERE id = ".$id);
 		//$r = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.$this->tabstat." WHERE id = ".$id);
 		//var_dump($r);
-		$this->redirectAdmin("statistic");
+		$this->redirectAdmin("_statistic");
 	}
 
 	function resetAllAction() {
 		global $wpdb;
 		$reset = $wpdb->get_results("UPDATE ".$wpdb->prefix.$this->tabstat." SET visit = 0, last = 0 ");
-		$this->redirectAdmin("statistic");
+		$this->redirectAdmin("_statistic");
 	}
 
 	function statDeleteAction(){
 		global $wpdb;
 		$id = $_GET['id'];
 		$wpdb -> get_results('DELETE FROM '.$wpdb->prefix.$this->tabstat.' WHERE id = '.$id);
-		$this->redirectAdmin("statistic");
+		$this->redirectAdmin("_statistic");
+	}
+
+	function importAction() {
+		global $wpdb;
+		$rows = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."prli_links ");
+		include 'theme/import.php';	
+	}
+
+	function allDeleteAction() {
+		global $wpdb;
+		$wpdb -> get_results('DELETE FROM '.$wpdb->prefix.$this->tabstat);
+		$wpdb -> get_results('DELETE FROM '.$wpdb->prefix.$this->tabred);
+		$this->redirectAdmin("");
+	}
+
+	function importAllAction() {
+		global $wpdb;
+		$theme = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.$this->tabtheme." LIMIT 0, 1");
+		$imports = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."prli_links ");
+		//var_dump($theme);
+
+		
+		$this->openHtaccess('a+');
+		foreach ($imports as $import) {
+			// add to table
+			$ins = $wpdb->insert( $wpdb->prefix.$this->tabred, array('link'=>$import->url, 'theme'=>$theme->id, 'aft'=>'', 'linkfrom'=>"/".$import->slug));
+			// add htacces 
+			$link = "Redirect 301 ".$_SERVER['SERVER_NAME']."/".$import->slug." /red/".$import->slug." \n";
+			fwrite($this->file, $link);
+		}
+		$this->closeHtaccess();
+		$this->redirectAdmin("");
+		
+	}
+
+
+	function importSingleAction() {
+		global $wpdb;
+		//var_dump($_POST);
+		$theme = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix.$this->tabtheme." LIMIT 0, 1");
+		$imports = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."prli_links ");
+		$this->openHtaccess('a+');
+		foreach ($_POST as $k => $l) {
+			foreach ($imports as $import) {				
+				if($import->id == $l ) {
+					//echo $l."<br>";
+					$ins = $wpdb->insert( $wpdb->prefix.$this->tabred, array('link'=>$import->url, 'theme'=>$theme->id, 'aft'=>'', 'linkfrom'=>"/".$import->slug));
+					$link = "Redirect 301 ".$_SERVER['SERVER_NAME']."/".$import->slug." /red/".$import->slug." \n";
+					fwrite($this->file, $link);
+				}
+			}			
+		}
+		$this->closeHtaccess();
+		$this->redirectAdmin("");
+
+
 	}
 
 	/******************** helpers ***************************************/
@@ -431,7 +491,7 @@ class polcode_link_head {
 	}
 
 	function redirectAdmin($url){
-		$path = get_admin_url()."admin.php?page=polcode_link_head_".$url;
+		$path = get_admin_url()."admin.php?page=polcode_link_head".$url;
 		echo "<script>window.location='".$path."'</script>";
 	}
 
