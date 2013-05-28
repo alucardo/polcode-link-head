@@ -23,6 +23,11 @@
 			</select>
 			<p>Text for roobots without iframes:</p>
 			<input type="text" name="rob">
+			<p>With iframe:</p>
+			<select name="ifr">
+				<option value="0">YES</option>
+				<option value="1">NO</option>
+			</select>
 		</div>
 		<input type="submit" value="save">
 	</form>

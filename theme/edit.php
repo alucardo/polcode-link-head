@@ -23,6 +23,15 @@
 		</select>
 		<p>Robots text:</p>
 		<input type="text" name="aft" value="<?php echo $af; ?>">
+		<p>With iframe:</p>
+		<select name="ifr">
+				<option value="0">YES</option>
+				<option value="1" <?php 
+					if($ifr==1){
+						echo 'selected';
+					}
+				?>>NO</option>
+		</select>
 		<input type="submit" value="save">
 	</form>
 </div>

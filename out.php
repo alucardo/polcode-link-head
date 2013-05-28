@@ -23,6 +23,14 @@
 <script src="<?= get_template_directory_uri() ?>/js/html5.js" type="text/javascript"></script>
 <![endif]-->
 
+<script>
+/*
+    jQuery(document).ready(function() {
+        alert(jQuery("iframe").contents().find("body").length); 
+
+    });*/
+</script>
+
 </head>
 
  <?php
@@ -52,23 +60,29 @@
         $wpdb -> get_results("UPDATE ".$wpdb->prefix."polcode_link_head_stat SET visit = ".$x.", last = ".time()." WHERE link = ".$idl);
 
     }
+
+
 ?>
 
 
      <body>
         <div class="polcode_box">
             <p>
-                  <?php 
+                <?php 
                     echo $head_text[0]->des;
                     
                 ?>
             </p>
             <a href="#" id="polcode_close">Sluiten<span>×</span></a>
         </div>
-        <iframe class="iframe" src="<?php echo $idls[0]->link; ?>" sandbox=""><?php echo $idls[0]->aft; ?></iframe>
+        <iframe class="iframe" src="<?php echo $idls[0]->link; ?>" ><?php echo $idls[0]->aft; ?></iframe>
     </body>
 </html>
 
 <?php 
+if($idls[0]->iframe==1){
+        //echo 'red';
+        echo "<script>window.location='".$idls[0]->link."'</script>";
+}
     exit();
 ?>

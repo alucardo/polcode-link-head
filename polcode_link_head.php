@@ -56,6 +56,7 @@ class polcode_link_head {
 		$i = strpos($link, 'red/');
 		if($i>0){
 		//var_dump($i);
+			
 			require( 'out.php' );
 			
 		}
@@ -138,7 +139,7 @@ class polcode_link_head {
 	function addAction(){
 		//adding line
 		if(isset($_POST['link'])){
-			$this->addLine($_POST['code'], $_POST['link'], $_POST['to'], $_POST['them'], $_POST['rob']);
+			$this->addLine($_POST['code'], $_POST['link'], $_POST['to'], $_POST['them'], $_POST['rob'], $_POST['ifr']);
 		}
 		$themes = $this->getAllThemes();
 
@@ -167,16 +168,19 @@ class polcode_link_head {
 		$lif = $dbd->linkfrom;
 		$th = $dbd->theme;
 		$af = $dbd->aft;
+		$ifr = $dbd->iframe;
+		//var_dump($_POST);
 
 		if(isset($_POST['link'])){			
 			//var_dump($id);
-			$wpdb->get_results("UPDATE ".$wpdb->prefix.$this->tabred." SET link ='".$_POST['link']."', theme = ".$_POST['them'].", aft= '".$_POST['aft']."', linkfrom = '".$_POST['linkfrom']."' WHERE id = ".$id);
+			$wpdb->get_results("UPDATE ".$wpdb->prefix.$this->tabred." SET link ='".$_POST['link']."', theme = ".$_POST['them'].", aft= '".$_POST['aft']."', linkfrom = '".$_POST['linkfrom']."', iframe=".$_POST['ifr']." WHERE id = ".$id);
 
 			
 			$li = $_POST['link'];
 			$lif = $_POST['linkfrom'];
 			$th = $_POST['them'];
 			$af = $_POST['aft'];
+			$ifr = $_POST['ifr'];
 			echo 'link edited';
 		}// \ if /
 		include "theme/edit.php";
@@ -361,7 +365,7 @@ class polcode_link_head {
 
 	// adds line to .htaccess
 	// only redairect now
-	private function addLine($code, $line, $to, $theme=0, $aft=""){
+	private function addLine($code, $line, $to, $theme=0, $aft="", $ifr=1){
 		$this->openHtaccess('r+');
 		//prepare link 
 
@@ -372,7 +376,7 @@ class polcode_link_head {
 
 		if($code == '1'){
 
-			$l = $this->addRed($to, $theme, $aft, $line);
+			$l = $this->addRed($to, $theme, $aft, $line, $ifr);
 			$pid = $this->getOption('postid');
 			//$link ="Redirect 301 /red{$line} /?page_id={$pid}&link={$l} \n";
 			//$link = "RewriteRule ^/red{$line}/$ /?page_id={$pid}&link={$l} \n";
@@ -447,9 +451,9 @@ class polcode_link_head {
 	}
 
 
-	private function addRed($link, $theme, $aft, $linkfrom) {
+	private function addRed($link, $theme, $aft, $linkfrom, $ifr) {
 		global $wpdb;
-		$rows_affective = $wpdb->insert( $wpdb->prefix.$this->tabred, array('link'=>$link, 'linkfrom'=>$linkfrom , 'theme'=>$theme, 'aft'=>$aft));
+		$rows_affective = $wpdb->insert( $wpdb->prefix.$this->tabred, array('link'=>$link, 'linkfrom'=>$linkfrom , 'theme'=>$theme, 'aft'=>$aft, 'iframe'=>$ifr));
 		return $wpdb->insert_id;
 	}
 
@@ -524,7 +528,8 @@ class polcode_link_head {
 			`link` varchar(200) NOT NULL,
 			`linkfrom` varchar(200) NULL,
 			`theme` varchar(200) NOT NULL,			
-			`aft` varchar(200) NOT NULL,			
+			`aft` varchar(200) NOT NULL,
+			`iframe` tinyint NULL,			
 			PRIMARY KEY (`id`)
 			) ENGINE =MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci";
 
