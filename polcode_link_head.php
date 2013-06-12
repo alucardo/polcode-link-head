@@ -16,7 +16,7 @@ class polcode_link_head {
 	private $tabtheme;
 	private $tabred;
 	private $pluginname;
-	const VER = 0.1;
+	const VER = 0.2;
 
 	function __construct() { 
 		$this->pluginname = "polcode_link_head";
